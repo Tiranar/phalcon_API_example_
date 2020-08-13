@@ -1,0 +1,8 @@
+
+/vendor
+/.idea
+/.phalcon
+
+composer.lock
+/public/.htaccess
+/config/config.php

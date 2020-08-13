@@ -1,0 +1,10 @@
+{
+    "require": {
+        "phalcon/devtools": "^3.2",
+        "firebase/php-jwt": "^5.0",
+        "aws/aws-sdk-php": "^3.70",
+        "phpmailer/phpmailer":"~5.2",
+        "chrisboulton/php-resque": "1.2.x",
+        "sinergi/browser-detector": "^6.1"
+    }
+}

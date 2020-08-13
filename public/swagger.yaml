@@ -1,0 +1,412 @@
+host: "developers.learn_hub.loc"
+basePath: "/api/"
+swagger: "2.0"
+info:
+  description: "
+# The LearnHub API is JSON-based and RESTful
+
+Api baseurl is *developers.learn_hub.loc/api/*.
+
+It means that every action url listed in this documentation meat to be added to this base url.
+
+## Getting Started
+
+
+# Step 1: Set Up a Developer Account and Get Organisation Access
+
+1. Reach out to learn_hub@learn_hub.loc to set up an account.
+
+2. If approved, you will receive an **Account Key** and an **Account Secret**, usually within one business day or so.
+
+3. Log in to LearnHub and, under Organisation Settings, add your Account Key *(not your secret!)* to your Organisations's white list. If you are not a member of this Organisation, email them your key with instructions on how to add it.
+
+# Step 2: Get a Developer Token
+
+With your Account Key tied to one at least one Organisation, you can now get a **Developer Token**
+
+1. Using the `/developer_token` method, pass your *Account Key* and *Secret* in the JSON request body.
+
+2. Your response should contain your token, as well as some other helpful feedback. Note that your token response carries a `type 'developer'`, indicating your **Role**. Read more on this below.
+
+
+**Note:** Your token has an expiration date, so it's a good idea to check its validity using `/validate` programmatically as part of your routine requests.
+
+
+# Step 3: Get a List of Your Available Organisation(s)
+
+1. Using the `/organisations/list` method, pass your *Developer Token* in your Authorization header.
+
+2. Your response should contain an array of Organisations, each with its own dynamically-generated **hash**. You will use this hash later.
+
+
+**Note:** You cannot depend upon the hash as a unique identifier if you plan to use a database to store any of this information. It is generated dynamically and will be different with every response. If you need a unique identifier, use the `dev_account` or the `organisation` email address.
+
+
+**Note:** An existing hash will keep working for you until you next pull a list of Organisations. At this point, you will get new hash(es).
+
+
+# Step 4: Get Organisational Token(s)
+
+1. Using the `/organisation_token` method, make a request for every Organisation desired, passing your Developer Token in the Authorization header and its *Hash* the JSON request body.
+
+2. Your response should contain a token, with a `type: 'organisation'`. This is your Organisation Token, and you will use it to perform activities.
+
+
+**Note:** Your token has an expiration date, so it's a good idea to check its validity using `/validate` programmatically as part of your routine requests. If it is expired, go back and pull a new list of Organisations (getting a new hash for each), and perform Step 4 again.
+
+You're all set! Use your Organisational Token(s) to send requests to the available `/create_user` method.
+
+
+## Roles
+
+# You can submit requests to the LearnHub API under one of three possible roles:
+
+The system will automatically detect your role by looking at the `Authorization` header used to sign each request. Guest requests do not require any Authorization header and can only be used to request a Developer Token. Unless your Authorization header says otherwise, the system assumes your role is Guest by default.
+
+* **Guest:** This role is used when a request is not signed with an Authorization header.
+
+* **Developer:** This role is used when a request is signed with a valid Developer Token.
+
+* **Organisation:** This role is used when a request is signed with a valid Organisational Token.
+"
+
+  title: "General info about API"
+  version: ""
+tags:
+- name: 'Token requests'
+  description: 'Tokens are here'
+- name: 'Organisations'
+  description: 'Organisations requests are here'
+#- name: 'Courses'
+#  description: 'Courses requests are here'
+paths:
+  /api/tokens/developer_token:
+    post:
+      tags: 
+      - Token requests
+      summary: "Allows to get developer token"
+      description: "Multiple status values can be provided with comma separated strings"
+      operationId: "developer_token"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Request"
+        required: true
+        schema:
+          type: "object"
+          properties: 
+            acc_key:
+              type: "string"
+              example: "c85c1730b55c77541901a09e82a9561f"
+            acc_secret:
+              type: "string"
+              example: "TdChZPyRsFv1YVJlYpxV13g5eTu0fSQs"
+      responses:
+        200:
+          description: "Successful request"
+          schema:
+            $ref: "#/definitions/TokenResponse"
+  /api/tokens/validate:
+    post:
+      tags: 
+      - Token requests
+      summary: "Allows to get developer token"
+      description: "Multiple status values can be provided with comma separated strings"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "headers"
+        in: "query"
+        description: "Requires Authorization header set to Bearer {{token.code}}"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Successful request"
+          schema:
+            $ref: "#/definitions/TokenResponse"
+  /api/tokens/organisation_token:
+    post:
+      tags: 
+      - Token requests
+      summary: "Allows to exchange dev token to Organisation token"
+      description: "Multiple status values can be provided with comma separated strings"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "headers"
+        in: "query"
+        description: "Requires Authorization header set to Bearer {{token.code}}"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Request"
+        required: true
+        schema:
+          type: "object"
+          properties: 
+            organisation_hash:
+              type: "string"
+              example: "eyJpdiI6IlRPY3NKZWtoMTJQSFRRMUxwTU94c3c9PSIsInZhbHVlIjoiRmpBRXQxZVpHVjJXVzJ3ZXhrYWVwUT09IiwibWFjIjoiMzhhZWU1NWY4ZTQ2OTUxOGM0YWEyODU0MjBjMTBiODcxNDZhN2MzZWQ5ZGMzMDkyODMyNWM2Njk1MWRjMjBkYyJ9"
+      responses:
+        200:
+          description: "Successful request"
+          schema:
+            $ref: '#/definitions/OrganisationResponse'
+            
+  /api/organisations/list:
+    get:
+      tags: 
+      - Organisations
+      summary: "Allows to get list of organisations"
+      description: "Multiple status values can be provided with comma separated strings"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "headers"
+        in: "query"
+        description: "Requires Authorization header set to Bearer {{token.code}}"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Successful request"
+          schema:
+            $ref: "#/definitions/OrganisationResponse"
+  /api/organisations/list_users:
+    get:
+      tags: 
+      - Organisations
+      summary: "Allows to get list of organisation users"
+      description: "Multiple status values can be provided with comma separated strings"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "headers"
+        in: "query"
+        description: "Requires Authorization header set to Bearer {{token.code}}"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Successful request"
+          schema:
+            $ref: '#/definitions/OrgListResponse'
+  /api/organisations/create_user:
+    post:
+      tags: 
+      - Organisations
+      summary: "Allows to create a new user"
+      description: "Multiple status values can be provided with comma separated strings."
+      produces:
+      - "application/json"
+      parameters:
+      - name: "headers"
+        in: "query"
+        description: "Requires Authorization header set to Bearer {{token.code}}"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: '#/definitions/CreateUser'
+      responses:
+        200:
+          description: "Successful request"
+          schema:
+            $ref: "#/definitions/APIResponse"
+
+definitions:
+    OrganisationResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        code:
+          type: "number"
+        status:
+          type: "string"
+        message:
+          type: "string"
+        data: 
+          type: "object"
+          properties:
+            token: 
+              type: object
+              $ref: '#/definitions/Token'
+            dev_account:
+              type: object
+              $ref: '#/definitions/DevelopersAccount'
+            organisation:
+              type: object
+              $ref: '#/definitions/Organisation'
+    TokenResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        code:
+          type: "number"
+        status:
+          type: "string"
+        message:
+          type: "string"
+        data: 
+          type: "object"
+          properties:
+            token: 
+              type: object
+              $ref: '#/definitions/Token'
+            dev_account:
+              type: object
+              $ref: '#/definitions/DevelopersAccount'
+    OrgListResponse:
+      type: object
+      properties:
+        success:
+          type: "boolean"
+        code:
+          type: number
+        status:
+          type: string
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            $ref: '#/definitions/Org'
+    UserListResponse:
+      type: object
+      properties:
+        success:
+          type: "boolean"
+        code:
+          type: number
+        status:
+          type: string
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            $ref: '#/definitions/User'
+    CreateUserResponse:
+      type: object
+      properties:
+        success:
+          type: "boolean"
+        code:
+          type: number
+        status:
+          type: string
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            $ref: '#/definitions/User'
+    APIResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        code:
+          type: "number"
+        status:
+          type: "string"
+        message:
+          type: "string"
+        data: 
+          type: "object"
+      xml:
+        name: "Response"
+    Token:
+      type: "object"
+      properties:
+        code:
+          type: "string"
+        expires:
+          type: "string"
+        type:
+          type: "string"
+    DevelopersAccount:
+      type: "object"
+      properties:
+        acc_key:
+          type: "string"
+        issued_to:
+          type: "string"
+        email:
+          type: "string"
+    Organisation:
+      type: "object"
+      properties:
+        email:
+          type: "integer"
+        name:
+          type: "string"
+        phone_number:
+          type: "number"
+        state: 
+          type: "string"
+        city:
+          type: "string"
+        street:
+          type: "string"
+        zip:
+          type: "number"
+    Org:
+      type: object
+      properties:
+        hash:
+          type: string
+          example: "eyJpdiI6Ijg4ZXpORUxWTXlWNk9UMUdyNWswXC93PT0iLCJ2YWx1ZSI6IjdSNWZ4d0ZwRUl6Q1ZvclNRNFNlVGc9PSIsIm1hYyI6IjExMDkxOTY2YmY5ZmQ2NTk2NDhlMDhjMDczMzQyMTBiZmQyMGEzZTZiMWIzYjU1NDFmYmNmM2E5ZjYwNzEyYzcifQ=="
+        email:
+          type: string
+          example: "fahey.imelda@heller.com"
+        name:
+          type: string
+          example: 'Orn, Dach and Volkman'
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+          example: "dina84@example.net"
+        contact_email:
+          type: string
+          example: "dina84@example.net"
+        first_name:
+          type: string
+          example: "Dina"
+        last_name:
+          type: string
+          example: "Zavr"
+        nickname:
+          type: string
+          example: "Dina_Zavr"
+        phone_number:
+          type: string
+          example: ""
+        birthday:
+          type: string
+          example: ""
+    CreateUser:
+      type: object
+      properties:
+        email:
+          type: string
+          example: "fahey.imelda@heller.com"
+        contact_email:
+          type: string
+          example: "fahey.imelda@heller.com"
+        confirm_code:
+          type: string
+          example: 'ffaaefe222f2d2c18496a0220e6e74a8'

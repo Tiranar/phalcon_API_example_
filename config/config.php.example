@@ -1,0 +1,51 @@
+<?php
+
+defined('APP_PATH') || define('APP_PATH', realpath('.'));
+defined('APPLICATION_ENV') || define('APPLICATION_ENV', 'development');
+
+$config = new \Phalcon\Config([
+    'application' => [
+        'title' => 'CL developers API',
+        'description' => 'LearnHub api for third party developers',
+        'baseUri' => '/',
+        'libraryDir' => APP_PATH . '/library/',
+        'modelsDir' => APP_PATH . '/mappers/',
+        'migrationsDir' => APP_PATH . '/migrations/',
+        'viewsDir' => APP_PATH . '/views/',
+        'middlewaresDir' => APP_PATH . '/middlewares/',
+    ],
+    'database' => [
+        'adapter' => 'Mysql', /* Possible Values: Mysql, Postgres, Sqlite */
+        'host' => '127.0.0.1',
+        'username' => '',
+        'password' => '',
+        'dbname' => '',
+        'charset' => 'utf8',
+    ],
+    'authentication' => [
+        'secret' => 'uo7bzSnhAwhADS2F5RDG', // This will sign the token. (still insecure)
+        'encryption_key' => '6S9iai7ZyKx7vq1lNWjEHpFBLFVShVqH/NTEgcA2zq8=', // Secure token with an ultra password
+        'dev_token_expiration_time' => 86400 * 7, // One Week till dev token expires
+        'org_token_expiration_time' => 86400, // One Day till org token will expire
+        'iss' => "developers.learn_hub.com", // Token issuer eg. www.myproject.com
+        'aud' => "developers.learn_hub.com", // Token audience eg. www.myproject.com
+    ],
+    'redis' => [
+        'host' => 'localhost',
+        'port' => '6379'
+    ],
+    'slack_bot' => [ // current-stack bot
+        'post_message_url' => 'https://slack.com/api/chat.postMessage',
+        'token_key' => 'xoxp-148200382309-317360336210-588596940100-fb9c362cb147b0e8e1ecb525e4f5f9ec',
+        'channel_key' => 'G9B9YB82G'
+    ],
+    'cms_api' => [
+        'url' => 'http://cms.learn_hub.loc',
+        'auth_path' => '/auth/login',
+        'create_user_path' => '/users',
+        'auth_email' => 'currentstack@currentstack.com',
+        'auth_password' => 'm7DsLlxcNOYGO4QABS5d'
+    ]
+]);
+
+return $config;
